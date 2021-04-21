@@ -27,7 +27,7 @@ bool sameType( NumberWithUnits const & lhs, NumberWithUnits const & rhs ) {
         }
         return false;
 }
- 
+
 void NumberWithUnits::read_units(ifstream& units_file){
         string b;
         string u;
@@ -37,6 +37,17 @@ void NumberWithUnits::read_units(ifstream& units_file){
         while(units_file >> n1 >> u >> b >> n2 >> u2) {
                 u_map[u][u2]=n2;
                 u_map[u2][u]=1/n2;
+
+                for (auto& x : u_map[u]){
+                  double conv=u_map[u2][u] * x.second;
+                  u_map[u2][x.first]= conv;
+                  u_map[x.first][u2]= 1/conv;
+              }
+                for (auto& x : u_map[u2]){
+                  double conv=u_map[u][u2] * x.second;
+                  u_map[u][x.first]= conv;
+                  u_map[x.first][u]= 1/conv;
+              }
         }
 }
 

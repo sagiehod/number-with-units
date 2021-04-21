@@ -11,20 +11,15 @@
 #include <sstream>
 using namespace std;
 using namespace ariel;
-
+ifstream units1_file{"units1.txt"};
 ifstream units_file{"units.txt"};
-const std::string test_file = "./units.txt";
 
 TEST_CASE("m and km)"){
     NumberWithUnits::read_units(units_file);
-    NumberWithUnits x{2650 , "cm"};
     NumberWithUnits a{2650, "m"};
     NumberWithUnits b{2.6, "km"};
     CHECK_EQ(a , NumberWithUnits{2650, "m"});
     CHECK_EQ(b, NumberWithUnits{2.6, "km"});
-    CHECK_EQ(x , NumberWithUnits{2650, "cm"});
-    CHECK_NE(x,a);
-    CHECK_NE(a,b);
     CHECK_EQ(a , NumberWithUnits{2.65, "km"});
     CHECK_EQ(b , NumberWithUnits{2600, "m"});
 //************* + , =+ , + unry , - , =- , - unry  ,* left, right * ****************}
@@ -36,7 +31,7 @@ TEST_CASE("m and km)"){
 //+,-
     CHECK_EQ(a+b , NumberWithUnits{5.25, "km"});
     CHECK_EQ(b+a , NumberWithUnits{5250, "m"});
-  //  CHECK((b-a) == NumberWithUnits( -0.05, "km"));
+    CHECK((b-a) == NumberWithUnits( -0.05, "km"));
     CHECK_EQ(a-b , NumberWithUnits{0.05, "km"});
 
 
@@ -53,8 +48,6 @@ TEST_CASE("m and km)"){
     CHECK_EQ(2*b , NumberWithUnits{20.9, "km"});
       //***************** > >= < <= == !=  ***************************
 //< ,<=,>=,>
-    CHECK(a<x);
-    CHECK(a<b);
     CHECK(a <  NumberWithUnits{-2599, "m"});
     CHECK(a <= NumberWithUnits{-2600, "m"});
     CHECK(b <  NumberWithUnits{10.46, "km"});
@@ -81,9 +74,9 @@ TEST_CASE("m and km)"){
       CHECK(++b == NumberWithUnits{10.45, "km"});
       // ****************** << >> ***************************
 //<<
-    stringstream str;
-    str << b<< endl;
-    //CHECK(nospaces(str.str())==nospaces("10.45[km]"));
+ ostringstream _output;
+    _output<<b;
+    ostringstream _output2{"-2599[km"};
 //>>
     istringstream str2{"5000[m]"};
     str2 >> a;
@@ -93,23 +86,6 @@ TEST_CASE("m and km)"){
 
 }
 
-TEST_CASE("-- ++ (++) (--))"){
-	// str --  , str++
-	NumberWithUnits::read_units(units_file);
-	 NumberWithUnits e{2000, "min"};
-	 NumberWithUnits f{2.5, "hour"};
- 			CHECK(e-- == NumberWithUnits{2000, "min"});
-			CHECK(e == NumberWithUnits{1999, "min"});
-			CHECK(f-- == NumberWithUnits{2.5, "hour"});
- 			CHECK(e++ == NumberWithUnits{1999, "min"});
-			CHECK(e == NumberWithUnits{2000, "min"});
- 			CHECK(f++ == NumberWithUnits{1.5, "hour"});
- // // //  --str  , ++ str
- 			CHECK(--e == NumberWithUnits{1999, "min"});
- 			CHECK(--f == NumberWithUnits{1.5, "hour"});
- 			CHECK(++e == NumberWithUnits{2000, "min"});
- 			CHECK(++f == NumberWithUnits{2.5, "hour"});
-}
 TEST_CASE("kg and ton)"){
     NumberWithUnits::read_units(units_file);
      NumberWithUnits c{2000, "kg"};
@@ -168,9 +144,9 @@ TEST_CASE("kg and ton)"){
       CHECK(++d == NumberWithUnits{9.5, "ton"});
   // ****************** << >> ***************************
 //<<
-    stringstream str;
-    str << d<< endl;
-     // CHECK(nospaces(str.str())==("9.5[ton]"));
+     ostringstream _output;
+    _output<<d;
+    ostringstream _output2{"9.6[ton]"};
 
 //>>
     istringstream str2{"1500[kg]"};
@@ -237,14 +213,115 @@ TEST_CASE("min and hour)"){
 			CHECK(++f == NumberWithUnits{25.5, "hour"});
     // ****************** << >> ***************************
 //<<
-    stringstream str;
-    str << f<< endl;
-   // CHECK(nospaces(str.str())==("25.5[hour]"));
+
+    ostringstream sample_output;
+    sample_output<<f;
+    ostringstream sample_output2{"25.5[hour"};
+
 //>>
     istringstream str2{"500[min]"};
     str2 >> e;
     CHECK(e == NumberWithUnits{500, "min"});
+}
 
+TEST_CASE("USD and ILS)"){
+     NumberWithUnits::read_units(units_file);
+     NumberWithUnits g{1000, "ILS"};
+     NumberWithUnits h{250, "USD"};
+    CHECK_EQ(g , NumberWithUnits{1000, "ILS"});
+    CHECK_EQ(h, NumberWithUnits{250, "USD"});
 
+//************* + , =+ , + unry , - , =- , - unry  ,* left, right * ****************}
+// + unry,- unry
+    CHECK_EQ(+g , NumberWithUnits{1000, "ILS"});
+    CHECK_EQ(+h , NumberWithUnits{250, "USD"});
+    CHECK_EQ((-h) , NumberWithUnits{-250, "USD"});
+    CHECK_EQ((-g) , NumberWithUnits{-1000, "ILS"});
+//+,-
+    CHECK_EQ(g+h , NumberWithUnits{1832.5,"ILS"});
+    CHECK_EQ(h+g , NumberWithUnits{550.3003, "USD"});
+    CHECK_EQ(g-h , NumberWithUnits{167.5, "ILS"});
+    CHECK_EQ(h-g , NumberWithUnits{-50.3003, "USD"});
 
+//=+,=-
+    CHECK_EQ(g+=h , NumberWithUnits{1832.5, "ILS"});
+    CHECK_EQ(h+=g , NumberWithUnits{800.3003, "USD"});
+    CHECK_EQ(g-=h , NumberWithUnits{-832.5, "ILS"});
+    CHECK_EQ(h-=g , NumberWithUnits{1050.3003, "USD"});
+//* left, right *
+    CHECK_EQ(g*2 , NumberWithUnits{-1665, "ILS"});
+    CHECK_EQ(2*g , NumberWithUnits{-1665, "ILS"});
+    CHECK_EQ(h*2 , NumberWithUnits{2100.6006, "USD"});
+    CHECK_EQ(2*h , NumberWithUnits{2100.6006, "USD"});
+//       //***************** > >= < <= == !=  ***************************
+//< ,<=,>=,>
+    CHECK(g <  NumberWithUnits{-832.5, "ILS"});
+    CHECK(g <= NumberWithUnits{-832.5, "ILS"});
+    CHECK(h <  NumberWithUnits{2100.7, "USD"});
+    CHECK(h <= NumberWithUnits{2100.6, "USD"});
+    CHECK(g >  NumberWithUnits{-1666, "ILS"});
+    CHECK(g >= NumberWithUnits{-1665, "ILS"});
+    CHECK(h >  NumberWithUnits{1050.2, "USD"});
+    CHECK(h >= NumberWithUnits{1050.3, "USD"});
+//==,!=
+    CHECK(g == NumberWithUnits{-832.5, "ILS"});
+    CHECK(h == NumberWithUnits{1050.3003, "USD"});
+    CHECK(h != NumberWithUnits{832, "ILS"});
+    CHECK(g != NumberWithUnits{1050, "USD"});
+		//********************** ++ -- *******************************
+ // str --  , str++
+			CHECK(g-- == NumberWithUnits{-832.5, "ILS"});
+			CHECK(h-- == NumberWithUnits{1050.3003, "USD"});
+			CHECK(g++ == NumberWithUnits{-833.5, "ILS"});
+			CHECK(h++ == NumberWithUnits{1049.3003, "USD"});
+//  --str  , ++ str
+			CHECK(--g == NumberWithUnits{-833.5, "ILS"});
+			CHECK(--h == NumberWithUnits{1049.3003, "USD"});
+			CHECK(++g == NumberWithUnits{-832.5, "ILS"});
+			CHECK(++h == NumberWithUnits{1050.3003, "USD"});
+            CHECK(h == NumberWithUnits{1050.3003, "USD"});
+    // ****************** << >> ***************************
+//<<
+    stringstream stream;
+    stream << h;
+    CHECK((stream.str() == "1050.3[USD]") == true);
+//>>
+    istringstream str2{"500[ILS]"};
+    str2 >> g;
+    CHECK(g == NumberWithUnits{500, "ILS"});
+}
+
+TEST_CASE("Randomly"){
+     ifstream units1_file{"units1.txt"};
+     NumberWithUnits::read_units(units1_file);
+     NumberWithUnits x{2650 , "cm"};
+     NumberWithUnits a{2650, "m"};
+     NumberWithUnits b{2.6, "km"};
+
+     NumberWithUnits g{1000, "ILS"};
+     NumberWithUnits i{250, "THB"};
+     NumberWithUnits h{250, "USD"};
+
+     NumberWithUnits y{360, "sec"};
+     NumberWithUnits e{360, "min"};
+     NumberWithUnits f{6.5, "hour"};
+
+     NumberWithUnits z{2500000, "g"};
+     NumberWithUnits c{2000, "kg"};
+     NumberWithUnits d{2.5, "ton"};
+    CHECK_NE(x,a);
+    CHECK_NE(a,b);
+    CHECK_NE(x,b);
+    CHECK(g>h);
+    CHECK(g>i);
+    CHECK(h>i);
+    CHECK_EQ(e+f , NumberWithUnits{750,"min"});
+    CHECK_EQ(f+y , NumberWithUnits{6.6, "hour"});
+    CHECK_EQ(y+f , NumberWithUnits{23760, "sec"});
+    CHECK_EQ(z-c , NumberWithUnits{500000, "g"});
+    CHECK_EQ(c-d , NumberWithUnits{-500, "kg"});
+    CHECK_EQ(d-z ,NumberWithUnits{0, "ton"});
+    CHECK_EQ(g*2 , NumberWithUnits{2000, "ILS"});
+    CHECK_EQ(i*2 , NumberWithUnits{500, "THB"});
+    CHECK_EQ(h*2 , NumberWithUnits{500, "USD"});
 }
