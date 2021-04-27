@@ -6,12 +6,14 @@ using namespace std;
 
 namespace ariel {
 
-
-
 unordered_map<string,unordered_map<string,double> > u_map;
 
-
-double convert(const string &from,const string &to, double val){
+NumberWithUnits::NumberWithUnits(double _unit ,const string& _str_unit){
+    if ( u_map.find(_str_unit) == u_map.end() ) {__throw_invalid_argument("type not exsist"); }
+  this->unit=_unit;
+  this->str_unit = _str_unit;
+}
+double NumberWithUnits::convert(const string &from,const string &to, double val){
         if(from == to ) {
                 return val;
         }
@@ -51,60 +53,54 @@ void NumberWithUnits::read_units(ifstream& units_file){
         }
 }
 
-
 // // //operator + , =+ , + unry , - , =- , - unry
-NumberWithUnits operator+( NumberWithUnits const & lhs, NumberWithUnits const & rhs ){
-        if(!sameType(lhs,rhs)) {  __throw_invalid_argument("Not same type");}
+NumberWithUnits NumberWithUnits::operator+(NumberWithUnits const & rhs ){
+        if(!sameType(*this,rhs)) {  __throw_invalid_argument("Not same type");}
         else{
-                return NumberWithUnits(lhs.unit+convert(lhs.str_unit,rhs.str_unit,rhs.unit),lhs.str_unit);
+                return NumberWithUnits(this->unit+NumberWithUnits::convert(this->str_unit,rhs.str_unit,rhs.unit),this->str_unit);
         }
 }
 
-NumberWithUnits operator+( NumberWithUnits & value ){
-        if(value.unit<0) {
-                return NumberWithUnits((-1*value.unit),value.str_unit);
-        }
-        return NumberWithUnits(value.unit,value.str_unit);
+NumberWithUnits NumberWithUnits::operator+( ) const{
+
+        return NumberWithUnits(+this->unit,this->str_unit);
 }
 
-
-NumberWithUnits operator+=( NumberWithUnits& lhs,const NumberWithUnits& rhs ){
-        if(!sameType(lhs,rhs)) {  __throw_invalid_argument("Not same type");}
+NumberWithUnits& NumberWithUnits::operator+=(const NumberWithUnits& rhs ){
+        if(!sameType(*this,rhs)) {  __throw_invalid_argument("Not same type");}
         else{
-                double con = convert(lhs.str_unit,rhs.str_unit,rhs.unit);
-                lhs.unit = lhs.unit + con;
-                return lhs;
+                double con = NumberWithUnits::convert(this->str_unit,rhs.str_unit,rhs.unit);
+                this->unit = this->unit + con;
+                return *this;
         }
 }
 
-NumberWithUnits operator-( NumberWithUnits const & lhs, NumberWithUnits const & rhs ){
-        if(!sameType(lhs,rhs)) {  __throw_invalid_argument("Not same type");}
-        else{
-                return NumberWithUnits(lhs.unit-convert(lhs.str_unit,rhs.str_unit,rhs.unit),lhs.str_unit);
-        }
+NumberWithUnits NumberWithUnits::operator-(NumberWithUnits const & rhs ){
+  if(!sameType(*this,rhs)) {  __throw_invalid_argument("Not same type");}
+  else{
+          return NumberWithUnits(this->unit-NumberWithUnits::convert(this->str_unit,rhs.str_unit,rhs.unit),this->str_unit);
+  }
 }
 
 
-NumberWithUnits operator-(NumberWithUnits & value) {
-        return NumberWithUnits((-1*value.unit),value.str_unit);
+NumberWithUnits NumberWithUnits::operator-() const {
+        return NumberWithUnits((-1*this->unit),this->str_unit);
 }
 
-
-NumberWithUnits operator-=( NumberWithUnits & lhs, NumberWithUnits const & rhs ){
-        if(!sameType(lhs,rhs)) {  __throw_invalid_argument("Not same type");}
-        else{
-                double con = convert(lhs.str_unit,rhs.str_unit,rhs.unit);
-                lhs.unit = lhs.unit - con;
-                return lhs;
-        }
+NumberWithUnits& NumberWithUnits::operator-=(NumberWithUnits const & rhs ){
+  if(!sameType(*this,rhs)) {  __throw_invalid_argument("Not same type");}
+  else{
+          double con = NumberWithUnits::convert(this->str_unit,rhs.str_unit,rhs.unit);
+          this->unit = this->unit - con;
+          return *this;
+  }
 }
 
 //operator > >= < <= == !=
 
-
 bool operator==( NumberWithUnits const & lhs, NumberWithUnits const & rhs ){
         if(!sameType(lhs,rhs)) {  __throw_invalid_argument("Not same type");}
-        double con=convert(lhs.str_unit,rhs.str_unit,rhs.unit);
+        double con=NumberWithUnits::convert(lhs.str_unit,rhs.str_unit,rhs.unit);
 
         const double eps=0.0001;
         if(abs(lhs.unit - con)<eps) {
@@ -116,7 +112,7 @@ bool operator==( NumberWithUnits const & lhs, NumberWithUnits const & rhs ){
 bool operator!=( NumberWithUnits const & lhs, NumberWithUnits const & rhs ){
         if(!sameType(lhs,rhs)) {  __throw_invalid_argument("Not same type");}
 
-        double con=convert(lhs.str_unit,rhs.str_unit,rhs.unit);
+        double con=NumberWithUnits::convert(lhs.str_unit,rhs.str_unit,rhs.unit);
         if(lhs.unit != con) {
                 return true; return false;
         }
@@ -126,7 +122,7 @@ bool operator!=( NumberWithUnits const & lhs, NumberWithUnits const & rhs ){
 bool operator<( NumberWithUnits const & lhs, NumberWithUnits const & rhs ){
         if(!sameType(lhs,rhs)) {  __throw_invalid_argument("Not same type");}
 
-        double con=convert(lhs.str_unit,rhs.str_unit,rhs.unit);
+        double con=NumberWithUnits::convert(lhs.str_unit,rhs.str_unit,rhs.unit);
         if(lhs.unit < con) {
                 return true; return false;
         }
@@ -135,20 +131,14 @@ bool operator<( NumberWithUnits const & lhs, NumberWithUnits const & rhs ){
 }
 
 bool operator<=( NumberWithUnits const & lhs, NumberWithUnits const & rhs ){
-        if(!sameType(lhs,rhs)) {  __throw_invalid_argument("Not same type");}
 
-        double con=convert(lhs.str_unit,rhs.str_unit,rhs.unit);
-        if(lhs.unit <= con) {
-                return true; return false;
-        }
-        return false;
-
+   return lhs < rhs || lhs == rhs;
 }
 
 bool operator>( NumberWithUnits const & lhs, NumberWithUnits const & rhs ){
         if(!sameType(lhs,rhs)) {  __throw_invalid_argument("Not same type");}
 
-        double con=convert(lhs.str_unit,rhs.str_unit,rhs.unit);
+        double con=NumberWithUnits::convert(lhs.str_unit,rhs.str_unit,rhs.unit);
         if(lhs.unit > con) {
                 return true; return false;
         }
@@ -157,13 +147,8 @@ bool operator>( NumberWithUnits const & lhs, NumberWithUnits const & rhs ){
 }
 
 bool operator>=( NumberWithUnits const & lhs, NumberWithUnits const & rhs ){
-        if(!sameType(lhs,rhs)) {  __throw_invalid_argument("Not same type");}
+   return lhs > rhs || lhs == rhs;
 
-        double con=convert(lhs.str_unit,rhs.str_unit,rhs.unit);
-        if(lhs.unit >= con) {
-                return true; return false;
-        }
-        return false;
 }
 
 NumberWithUnits operator--( NumberWithUnits & value, int ){
@@ -181,20 +166,43 @@ NumberWithUnits operator++( NumberWithUnits & value, int ){
         return NumberWithUnits(value.unit++, value.str_unit);
 }
 
+ NumberWithUnits operator*(const NumberWithUnits& lhs,const double &value){
+        return NumberWithUnits(lhs.unit*value,lhs.str_unit);
+ }
+ NumberWithUnits operator*(const double &value, const NumberWithUnits& rhs){
+         return NumberWithUnits(rhs.unit*value,rhs.str_unit);
 
-NumberWithUnits operator*(NumberWithUnits& lhs, double value){
-        return NumberWithUnits(lhs.unit*value, lhs.str_unit);
-}
-NumberWithUnits operator*(double value, NumberWithUnits& rhs){
-        return NumberWithUnits(rhs.unit*value, rhs.str_unit);
-}
-// //operator <<
+ }
+
+ //operator <<
 ostream& operator<<(ostream& os, const NumberWithUnits& value){
         return os<<value.unit<<"["<<value.str_unit<<"]";
 }
-istream& operator>>(istream& in, NumberWithUnits& value){
-        string temp;
-        in >> value.unit>> temp >> value.str_unit;
+///operator >>
+      istream &operator>>(istream &in, NumberWithUnits &value) {
+        string str;
+        getline(in, str, ']'); //Calls from IS to STR until he sees]
+
+        string number;
+        string un;
+        unsigned int i = 0;
+        while (' ' == str[i]){
+            i++;
+        }
+        while (('0' <= str[i] && str[i] <= '9') || '+' == str[i] || '-' == str[i] || '.' == str[i]){
+            number += str[i++];
+        }
+        while (' ' == str[i] || str[i] == '['){
+            i++;
+        }
+        while ('A' <= str[i] && str[i] <= 'z'){
+            un += str[i++];
+        }
+       if(u_map.find(un) == u_map.end()) {__throw_invalid_argument("Eror not same type");}
+
+        value = NumberWithUnits(stod(number), un);
         return in;
+  //  }
 }
+
 }

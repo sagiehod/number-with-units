@@ -13,27 +13,25 @@ namespace ariel{
           string str_unit;
 
           friend bool sameType( NumberWithUnits const & lhs, NumberWithUnits const & rhs ) ;
-          double convert(const string from ,const string to , double val);
+          static double convert(const string& from ,const string& to , double val);
         public:
-          NumberWithUnits(double _unit ,string _str_unit){
-            unit=_unit;
-            str_unit = _str_unit;
-          }
+          NumberWithUnits(double _unit ,const string& _str_unit);
+
           ~NumberWithUnits(){}
           static void read_units(ifstream& units_file);
 
           //operator + , =+ , + unry , - , =- , - unry
-          friend NumberWithUnits operator+( NumberWithUnits const & lhs, NumberWithUnits const & rhs );
+          NumberWithUnits operator+( NumberWithUnits const & rhs);
 
-          friend NumberWithUnits operator+( NumberWithUnits & value );
+          NumberWithUnits operator+() const;
 
-          friend NumberWithUnits operator+=( NumberWithUnits& lhs, const NumberWithUnits& rhs );
+          NumberWithUnits& operator+=( NumberWithUnits const & rhs);
 
-          friend NumberWithUnits operator-( NumberWithUnits const & lhs, NumberWithUnits const & rhs );
+          NumberWithUnits operator-(NumberWithUnits const & rhs);
 
-          friend NumberWithUnits operator-(NumberWithUnits & value) ;
+          NumberWithUnits operator-() const;
 
-          friend NumberWithUnits operator-=( NumberWithUnits & lhs, NumberWithUnits const & rhs );
+          NumberWithUnits& operator-=(NumberWithUnits const & rhs);
 
           //operator > >= < <= == !=
 
@@ -55,8 +53,8 @@ namespace ariel{
           friend  NumberWithUnits & operator++( NumberWithUnits & value );
           friend  NumberWithUnits operator++( NumberWithUnits & value, int );
           //operator *
-          friend NumberWithUnits operator*(NumberWithUnits& lhs, double value);
-          friend NumberWithUnits operator*(double value, NumberWithUnits& rhs);
+          friend NumberWithUnits operator*(const NumberWithUnits& lhs,const double &value);
+          friend NumberWithUnits operator*(const double &value, const NumberWithUnits& rhs);
           //operator <<
           friend ostream& operator<<(ostream& os, const NumberWithUnits& value);
           friend istream& operator>>(istream& in, NumberWithUnits& value);
